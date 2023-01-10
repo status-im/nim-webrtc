@@ -1,0 +1,67 @@
+name: CI
+on:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - os: linux
+            cpu: amd64
+          - os: linux
+            cpu: i386
+          - os: macos
+            cpu: amd64
+          - os: windows
+            cpu: amd64
+        nim: [1.2.18, 1.6.10, devel]
+        include:
+          - target:
+              os: linux
+            builder: ubuntu-20.04
+            shell: bash
+          - target:
+              os: macos
+            builder: macos-12
+            shell: bash
+          - target:
+              os: windows
+            builder: windows-2019
+            shell: msys2 {0}
+
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+
+    name: '${{ matrix.target.os }}-${{ matrix.target.cpu }} (Nim ${{ matrix.nim }})'
+    runs-on: ${{ matrix.builder }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - uses: iffy/install-nim@v3
+        with:
+          version: ${{ matrix.nim }}
+
+
+      - name: Install deps
+        run: |
+          nimble install -dy
+
+      - name: Run tests
+        run: |
+          nim --version
+          nimble --version
+          #TODO
+          #nimble test
+          nim c examples/sctp_ping.nim
+          nim c examples/sctp_pong.nim

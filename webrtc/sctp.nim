@@ -101,7 +101,7 @@ proc write*(self: SctpConnection, buf: seq[byte]) {.async.} =
   self.sctp.sentConnection = self
   self.sctp.sentAddress = self.address
   let sendvErr = self.sctp.usrsctpAwait:
-    self.sctpSocket.usrsctp_sendv(addr buf[0], buf.len.uint,
+    self.sctpSocket.usrsctp_sendv(unsafeAddr buf[0], buf.len.uint,
                                   nil, 0, nil, 0,
                                   SCTP_SENDV_NOINFO, 0)
 
@@ -254,7 +254,7 @@ proc new*(T: typedesc[Sctp], port: uint16 = 9899): T =
   proc onReceive(udp: DatagramTransport, address: TransportAddress) {.async, gcsafe.} =
     let
       msg = udp.getMessage()
-      data = usrsctp_dumppacket(addr msg[0], uint(msg.len), SCTP_DUMP_INBOUND)
+      data = usrsctp_dumppacket(unsafeAddr msg[0], uint(msg.len), SCTP_DUMP_INBOUND)
     if data != nil:
       if sctp.isServer:
         trace "onReceive (server)", data = data.packetPretty(), length = msg.len(), address
@@ -264,12 +264,12 @@ proc new*(T: typedesc[Sctp], port: uint16 = 9899): T =
 
     if sctp.isServer:
       sctp.sentAddress = address
-      usrsctp_conninput(cast[pointer](sctp), addr msg[0], uint(msg.len), 0)
+      usrsctp_conninput(cast[pointer](sctp), unsafeAddr msg[0], uint(msg.len), 0)
     else:
       let conn = await sctp.getOrCreateConnection(udp, address)
       sctp.sentConnection = conn
       sctp.sentAddress = address
-      usrsctp_conninput(cast[pointer](sctp), addr msg[0], uint(msg.len), 0)
+      usrsctp_conninput(cast[pointer](sctp), unsafeAddr msg[0], uint(msg.len), 0)
   let
     localAddr = TransportAddress(family: AddressFamily.IPv4, port: Port(port))
     laddr = initTAddress("127.0.0.1:" & $port)
