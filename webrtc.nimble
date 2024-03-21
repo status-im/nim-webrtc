@@ -33,5 +33,5 @@ proc runTest(filename: string) =
   exec excstr & " -r " & " tests/" & filename
   rmFile "tests/" & filename.toExe
 
-# task test, "Run test":
-#   runTest("runalltests")
+task test, "Run test":
+  runTest("runalltests")

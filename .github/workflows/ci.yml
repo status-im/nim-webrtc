@@ -61,6 +61,6 @@ jobs:
         run: |
           nim --version
           nimble --version
-          # nimble test
+          nimble test
           # nim c examples/ping.nim
           # nim c examples/pong.nim
