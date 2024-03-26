@@ -48,10 +48,19 @@ jobs:
         with:
           submodules: true
 
+      - name: MSYS2 (Windows amd64)
+        if: ${{ matrix.target.os == 'windows' && matrix.target.cpu == 'amd64' }}
+        uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          install: >-
+            base-devel
+            git
+            mingw-w64-x86_64-toolchain
+
       - uses: iffy/install-nim@v3
         with:
           version: ${{ matrix.nim }}
-
 
       - name: Install deps
         run: |
