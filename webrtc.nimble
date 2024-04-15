@@ -25,6 +25,14 @@ let cfg =
 
 import hashes
 
+proc buildExample(filename: string, run = false, extraFlags = "") =
+  var excstr = nimc & " " & lang & " " & flags & " -p:. " & extraFlags
+  excstr.add(" examples/" & filename)
+  exec excstr
+  if run:
+    exec "./examples/" & filename.toExe
+  rmFile "examples/" & filename.toExe
+
 proc runTest(filename: string) =
   var excstr = nimc & " " & lang & " -d:debug " & cfg & " " & flags
   excstr.add(" -d:nimOldCaseObjects") # TODO: fix this in binary-serialization
@@ -33,5 +41,10 @@ proc runTest(filename: string) =
   exec excstr & " -r " & " tests/" & filename
   rmFile "tests/" & filename.toExe
 
-# task test, "Run test":
-#   runTest("runalltests")
+task test, "Runs the test suite":
+  # runTest("runalltests")
+  exec "nimble build_example"
+
+task build_example, "Build the examples":
+  buildExample("ping")
+  buildExample("pong")
