@@ -9,7 +9,7 @@ requires "nim >= 1.6.0",
          "chronicles >= 0.10.2",
          "chronos >= 3.0.6",
          "https://github.com/status-im/nim-binary-serialization.git",
-         "https://github.com/status-im/nim-mbedtls.git",
+         "https://github.com/lchenut/nim-mbedtls.git",
          "https://github.com/status-im/nim-usrsctp.git"
 
 let nimc = getEnv("NIMC", "nim") # Which nim compiler to use
@@ -17,11 +17,16 @@ let lang = getEnv("NIMLANG", "c") # Which backend (c/cpp/js)
 let flags = getEnv("NIMFLAGS", "") # Extra flags for the compiler
 let verbose = getEnv("V", "") notin ["", "0"]
 
-let cfg =
+var cfg =
   " --styleCheck:usages --styleCheck:error" &
-  (if verbose: "" else: " --verbosity:0 --hints:off") &
+  # (if verbose: "" else: " --verbosity:0 --hints:off") &
+  " --verbosity:3" &
   " --skipParentCfg --skipUserCfg -f" &
   " --threads:on --opt:speed"
+
+when defined windows:
+  echo "Add -lws2_32 to cfg"
+  cfg = cfg & " --clib:ws2_32"
 
 import hashes
 
