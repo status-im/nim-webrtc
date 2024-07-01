@@ -18,6 +18,7 @@ logScope:
 # - Need to implement ICE-CONTROLL(ED|ING) for browser to browser (not critical)
 
 const
+  StunConnectionTracker* = "webrtc.stun.connection"
   StunMaxQueuingMessages = 1024
   StunBindingRequest* = 0x0001'u16
   StunBindingResponse* = 0x0101'u16
@@ -211,6 +212,7 @@ proc new*(
     rng: rng
   )
   self.handlesFut = self.stunMessageHandler()
+  trackCounter(StunConnectionTracker)
   return self
 
 proc join*(self: StunConn) {.async: (raises: [CancelledError]).} =
@@ -227,6 +229,7 @@ proc close*(self: StunConn) =
   self.closeEvent.fire()
   self.handlesFut.cancelSoon()
   self.closed = true
+  untrackCounter(StunConnectionTracker)
 
 proc write*(
     self: StunConn,
